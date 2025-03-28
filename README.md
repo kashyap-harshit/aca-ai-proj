@@ -20,13 +20,7 @@ git clone <repository_url>
 cd <project_directory>
 ```
 
-## Step 3: Create a Virtual Environment (Optional but Recommended)
-```bash
-python3 -m venv venv
-source venv/bin/activate  # On Windows, use `venv\Scripts\activate`
-```
-
-## Step 4: Install Dependencies
+## Step 3: Install Dependencies
 Run the following command to install the required Python packages:
 ```bash
 pip install -r requirements.txt
@@ -36,13 +30,13 @@ If you do not have a `requirements.txt`, install the dependencies manually:
 pip install google-generativeai opencv-python pyttsx3 python-dotenv pillow
 ```
 
-## Step 5: Set Up API Key
+## Step 4: Set Up API Key
 Create a `.env` file in the project directory and add your API key:
 ```env
 API_KEY=your_google_gemini_api_key_here
 ```
 
-## Step 6: Run the Program
+## Step 5: Run the Program
 Execute the script:
 ```bash
 python main.py
