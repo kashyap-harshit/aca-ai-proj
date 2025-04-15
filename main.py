@@ -3,15 +3,11 @@ import cv2
 import pyttsx3
 from dotenv import load_dotenv
 import os
+import speech_recognition as sr
 import time
 import re
 from PIL import Image
-# from picamera2 import Picamera2 #for raspberry pie
-# also main terminal
-# sudo apt update
-# sudo apt install python3-picamera2
 
-# Load API Key
 try:
     load_dotenv()
 except Exception as e:
@@ -22,18 +18,18 @@ api_key = os.getenv("API_KEY")
 genai.configure(api_key=api_key)
 model = genai.GenerativeModel("gemini-1.5-flash")
 
-# Initialize Text-to-Speech with a slower rate
+
 engine = pyttsx3.init()
-engine.setProperty("rate", 130)  # Adjust speed (default is ~200, lower is slower)
+engine.setProperty("rate", 200)  
 
 def speak(text):
-    """Convert text to speech with adjusted speed."""
+    
     engine.say(text)
     engine.runAndWait()
 
 def capture_image(filename="image.jpg"):
-    """Capture an image from the camera."""
-    cam = cv2.VideoCapture(0)  # Use the default camera
+  
+    cam = cv2.VideoCapture(0)  
     ret, frame = cam.read()
     if ret:
         cv2.imwrite(filename, frame)
@@ -43,20 +39,10 @@ def capture_image(filename="image.jpg"):
     cam.release()
 
 
-'''
-def capture_image(filename="image.jpg"): #for raspberry pie
-    """Capture an image using the Raspberry Pi camera."""
-    picam2 = Picamera2()  # Initialize the Raspberry Pi camera
-    picam2.start()
-    time.sleep(2)  # Allow camera to adjust
-    picam2.capture_file(filename)  # Capture and save image
-    print("Image captured successfully.")
-
-'''
 
 
 def analyze_image(filename="image.jpg"):
-    """Send the captured image to Gemini API for description."""
+    
     try:
         image = Image.open(filename)
         prompt = (
@@ -77,20 +63,42 @@ if not cam.isOpened():
     print("Error: Could not open camera.")
     exit(1)
 
+recognizer = sr.Recognizer()
+mic = sr.Microphone()
+
+def listen_for_yes_no():
+    with mic as source:
+        print("Listening for your response (yes or no)...")
+        recognizer.adjust_for_ambient_noise(source)
+        audio = recognizer.listen(source)
+
+    try:
+        response = recognizer.recognize_google(audio)
+        print("You said:", response)
+        return response.lower()
+    except sr.UnknownValueError:
+        print("Sorry, I couldn't understand you.")
+        return None
+    except sr.RequestError as e:
+        print(f"Could not request results from Google Speech Recognition service; {e}")
+        return None
+
+
 while True:
-    user_input = input("Do you want to know what's happening around you? (yes/no): ").strip().lower()
+    speak("Do you want to know what's happening around you? Say yes or no.")
+    user_input = listen_for_yes_no()
+
     
-    if user_input == "yes":
+    if user_input in ["yesss" ,"ya","yaaah","Yash","yes", "yeah", "yep", "yes yes yes", "yes yes","ohh yeaahhhhh"]:
         capture_image()
         description = analyze_image()
-        print("Gemini's Description:", description)
+        print(description)
         speak(description)
-    
-    elif user_input == "no":
-        print("Okay, exiting.")
+
+    elif user_input in ["no", "nope", "nah"]:
+        speak("Okay, exiting.")
         break
-    
+
     else:
-        print("Invalid input, please type 'yes' or 'no'.")
-    
-    time.sleep(2)  # Small delay before asking again
+        speak("I didn't catch that. Please say yes or no.")
+        time.sleep(2)
